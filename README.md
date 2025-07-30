@@ -47,6 +47,7 @@ lungnet/
 ├── mlruns/                 # MLflow run history
 ├── Dockerfile
 ├── run.sh
+├── split_data.py
 ├── requirements.txt
 └── README.md
 
@@ -59,7 +60,8 @@ lungnet/
 ```bash
 git clone https://github.com/yourusername/lungnet.git
 cd lungnet
-pip install -r requirements.txt
+python -m venv venv && source venv/bin/activate
+pip install  -r requirements.txt
 ```
 
 ### 2. Train the Model
