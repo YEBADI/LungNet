@@ -13,7 +13,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Updated dataset path
 dataset = ChestXrayDataset(
-    csv_path='data/metadata.csv',
+    csv_path='data/train.csv',
     images_dir='data/raw/'
 )
 
