@@ -1,0 +1,21 @@
+# Ignore all contents of the data directory
+data/
+
+# Python virtual environments
+venv/
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Jupyter
+.ipynb_checkpoints/
+
+# MLflow artifacts
+mlruns/
+
+# OS/system files
+.DS_Store
+
