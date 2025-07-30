@@ -1,4 +1,3 @@
-# src/explain.py
 from torchvision.models import resnet18
 import cv2, numpy as np
 import torch
