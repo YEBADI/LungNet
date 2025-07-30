@@ -1,16 +1,28 @@
-# src/data_utils.py
-import pandas as pd, torch
+import os
+import pandas as pd
+import torch
+from torch.utils.data import Dataset
 from PIL import Image
 from torchvision import transforms
-from torch.utils.data import Dataset
 
 class ChestXrayDataset(Dataset):
-    def __init__(self, csv_file, img_dir, transform=None):
-        df = pd.read_csv(csv_file)
-        self.df = df[df['Finding Labels'].notnull()]
-        self.df['label'] = self.df['Finding Labels'].apply(lambda x: 0 if x == 'No Finding' else 1)
-        self.img_dir = img_dir
-        self.transform = transform or transforms.Compose([
+    def __init__(self, csv_path, images_dir, transform=None, label_map=None):
+        self.df = pd.read_csv(csv_path)
+
+        # Handle multi-label case
+        self.df['Finding Labels'] = self.df['Finding Labels'].str.split('|')
+
+        # Build full image paths
+        self.df['Image Path'] = self.df['Image Index'].apply(lambda x: os.path.join(images_dir, x))
+
+        # Create sorted unique list of labels if not provided
+        if label_map is None:
+            all_labels = sorted({label for labels in self.df['Finding Labels'] for label in labels})
+            self.label_map = {label: i for i, label in enumerate(all_labels)}
+        else:
+            self.label_map = label_map
+
+        self.transform = transform if transform else transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor()
         ])
@@ -20,7 +32,13 @@ class ChestXrayDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
-        image = Image.open(f"{self.img_dir}/{row['Image Index']}").convert("RGB")
-        label = torch.tensor(row['label'], dtype=torch.float32)
-        return self.transform(image), label
+        img = Image.open(row['Image Path']).convert("RGB")
+        img = self.transform(img)
 
+        # Multi-label target vector
+        target = torch.zeros(len(self.label_map))
+        for label in row['Finding Labels']:
+            if label in self.label_map:
+                target[self.label_map[label]] = 1.0
+
+        return img, target
